@@ -4,6 +4,36 @@ Shader"ZZZ/AvatarRender"
     {
         [KeywordEnum(None,Face,Eye,Body)] _Domain("材质域",Float)=0
         
+        [Header(Shader Option)]
+        [Space(10)]
+        [Enum(UnityEngine.Rendering.BlendOp)] _BlendOp("混合运算符",Float)=0
+        [Enum(UnityEngine.Rendering.BlendMode)] _SrcBlend("混合源运算因子",Float)=1
+        [Enum(UnityEngine.Rendering.BlendMode)] _DstBlend("混合目标运算因子",Float)=0
+        [Enum(UnityEngine.Rendering.CullMode)] _CullMode("剔除模式",Float)=2
+        [Enum(Off,0,On,1)] _ZWriteMode("深度写入",Float)=1
+        [Enum(UnityEngine.Rendering.CompareFunction)] _ZTestMode("深度测试模式",Float)=4
+        [Enum(UnityEngine.Rendering.ColorWriteMask)] _ColorMask("颜色写入掩码",Float)=15
+        
+        [Header(Stencil Test Settings)]
+        [Space(10)]
+        [Enum(UnityEngine.Rendering.CompareFunction)] _StencilCompareFunction("模板测试模式",Float)=8
+        [IntRange] _Stencil("模板测试参考值",Range(0,255))=0
+        [Enum(UnityEngine.Rendering.StencilOp)] _StencilPass("模板测试通过操作",Float)=1
+        [Enum(UnityEngine.Rendering.StencilOp)] _StencilFail("模板测试失败操作",Float)=1
+        [Enum(UnityEngine.Rendering.StencilOp)] _StencilZFail("模板测试深度失败操作",Float)=1
+        
+        [Header(SRP Default)]
+        [Space(10)]
+        [Toggle(_SRP_DEFAULT_PASS)] _SRPDefaultPass("SRP Default Pass",Float)=0
+        [Enum(UnityEngine.Rendering.BlendMode)] _SRPDefaultSrcBlend("SRP Default Pass 混合源运算因子",Float)=1
+        [Enum(UnityEngine.Rendering.BlendMode)] _SRPDefaultDstBlend("SRP Default Pass 混合目标运算因子",Float)=0
+        [Enum(UnityEngine.Rendering.BlendOp)] _SRPDefaultBlendOp("SRP Default Pass 混合运算符",Float)=0
+        [IntRange] _SRPStencilRef("SRP Default Pass 模板测试参考值",Range(0,255))=0
+        [Enum(UnityEngine.Rendering.CompareFunction)] _SRPStencilCompareFunction("SRP Default Pass 模板测试模式",Float)=8
+        [Enum(UnityEngine.Rendering.StencilOp)] _SRPStencilPass("SRP Default Pass 模板测试通过操作",Float)=0
+        [Enum(UnityEngine.Rendering.StencilOp)] _SRPStencilFail("SRP Default Pass 模板测试失败操作",Float)=0
+        [Enum(UnityEngine.Rendering.StencilOp)] _SRPStencilZFail("SRP Default Pass 模板测试深度失败操作",Float)=0
+        
         [Header(Textures)]
         [Space(10)]
         _Color("主纹理颜色修改",Color)=(1,1,1,1)
@@ -122,8 +152,8 @@ Shader"ZZZ/AvatarRender"
         [Header(Specular Settings)]
         [Space(10)]
         _SpecularIntensity("高光强度",Range(0,1))=1
-        _Metallic("金属度",Range(0,1))=1
-        _Smoothness("光滑度",Range(0,1))=1
+        _MatMetallic("金属度",Range(0,1))=1
+        _MatSmoothness("光滑度",Range(0,1))=1
         _HeadSphereRange("头发球状法线钳制范围",Range(-1,1))=1
         [Space(10)]
         [Toggle] _HighLightShape1("材质ID1:高光NPR模型使用",Float)=0
@@ -165,6 +195,29 @@ Shader"ZZZ/AvatarRender"
         [Header(Ambient Settings)]
         _AmbientColorIntensity("环境光强度",Range(0,1))=1
         
+        [Header(Rim Light Settings)]
+        [Space(10)]
+        [Toggle(_SCREEN_SPACE_RIM)] _ScreenSpaceRim("屏幕空间边缘光启用",Float)=0
+        _ScreenSpaceRimWidth("屏幕空间边缘光宽度",Range(0,1))=0.2
+        _ScreenSpaceRimThreshold("屏幕空间边缘光阈值",Range(0,1))=0.015
+        _ScreenSpaceRimFadeOut("屏幕空间边缘光渐变",Range(0,10))=0.2
+        _ScreenSpaceRimBrightness("屏幕空间边缘光亮度",Range(0,5))=1
+        [Space(5)]
+        [Enum(s0,0,s1,1,s2,2,s3,3,s4,4,s5,5)] _SkinMaterialID("皮肤材质ID",Float)=0
+        [Space(5)]
+        _SunColor1("材质ID1:太阳光颜色",Color)=(1,1,1,1)
+        _SunColor2("材质ID2:太阳光颜色",Color)=(1,1,1,1)
+        _SunColor3("材质ID3:太阳光颜色",Color)=(1,1,1,1)
+        _SunColor4("材质ID4:太阳光颜色",Color)=(1,1,1,1)
+        _SunColor5("材质ID5:太阳光颜色",Color)=(1,1,1,1)
+        [Space(5)]
+        _RimGlowColor1("材质ID1:边缘光染色",Color)=(1,1,1,1)
+        _RimGlowColor2("材质ID2:边缘光染色",Color)=(1,1,1,1)
+        _RimGlowColor3("材质ID3:边缘光染色",Color)=(1,1,1,1)
+        _RimGlowColor4("材质ID4:边缘光染色",Color)=(1,1,1,1)
+        _RimGlowColor5("材质ID5:边缘光染色",Color)=(1,1,1,1)
+        
+        
         [Space(10)]
         _AlphaClip("Alpha Clip",Range(0,1))=0
     }
@@ -185,6 +238,19 @@ Shader"ZZZ/AvatarRender"
         #pragma shader_feature_local _SCREEN_SPACE_SHADOW
         #pragma shader_feature_local _MATCAP_ON
         #pragma shader_feature_local _GAMMA_ON
+        #pragma shader_feature_local _SCREEN_SPACE_RIM
+
+        #pragma multi_compile _ _MAIN_LIGHT_SHADOWS
+        #pragma multi_compile _ _MAIN_LIGHT_SHADOWS_CASCADE
+        #pragma multi_compile _ _MAIN_LIGHT_SHADOWS_SCREEN
+
+        #pragma multi_compile_fragment _ _LIGHT_LAYERS
+        #pragma multi_compile_fragment _ _LIGHT_COOKIES
+        #pragma multi_compile_fragment _ _SCREEN_SPACE_OCCLUSION
+        #pragma multi_compile_fragment _ _ADDITIONAL_LIGHT_SHADOWS
+        #pragma multi_compile_fragment _ _SHADOWS_SOFT
+        #pragma multi_compile_fragment _ _REFLECTION_PROBE_BLENDING
+        #pragma multi_compile_fragment _ _REFLECTION_PROBE_BOX_PROJECTION
 
         #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
         #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
@@ -217,7 +283,35 @@ Shader"ZZZ/AvatarRender"
         DEFINE_MINMAX3(int)
         DEFINE_MINMAX3(float)
         DEFINE_MINMAX3(half)
-            
+
+        #define DEFINE_POW(TYPE)\
+            TYPE pow2(TYPE x){return TYPE (x*x);}\
+            TYPE##2 pow2(TYPE##2 x){return TYPE##2 (x*x);}\
+            TYPE##3 pow2(TYPE##3 x){return TYPE##3 (x*x);}\
+            TYPE##4 pow2(TYPE##4 x){return TYPE##4 (x*x);}\
+            TYPE pow3(TYPE x){return TYPE (x*x*x);}\
+            TYPE##2 pow3(TYPE##2 x){return TYPE##2 (x*x*x);}\
+            TYPE##3 pow3(TYPE##3 x){return TYPE##3 (x*x*x);}\
+            TYPE##4 pow3(TYPE##4 x){return TYPE##4 (x*x*x);}\
+            TYPE pow4(TYPE x){TYPE xx=x*x;return TYPE (xx*xx);}\
+            TYPE##2 pow4(TYPE##2 x){TYPE##2 xx=x*x;return TYPE##2 (xx*xx);}\
+            TYPE##3 pow4(TYPE##3 x){TYPE##3 xx=x*x;return TYPE##3 (xx*xx);}\
+            TYPE##4 pow4(TYPE##4 x){TYPE##4 xx=x*x;return TYPE##4 (xx*xx);}\
+            TYPE pow5(TYPE x){TYPE xx=x*x;return TYPE (xx*xx*x);}\
+            TYPE##2 pow5(TYPE##2 x){TYPE##2 xx=x*x;return TYPE##2 (xx*xx*x);}\
+            TYPE##3 pow5(TYPE##3 x){TYPE##3 xx=x*x;return TYPE##3 (xx*xx*x);}\
+            TYPE##4 pow5(TYPE##4 x){TYPE##4 xx=x*x;return TYPE##4 (xx*xx*x);}\
+            TYPE pow6(TYPE x){TYPE xx=x*x;return TYPE (xx*xx*xx);}\
+            TYPE##2 pow6(TYPE##2 x){TYPE##2 xx=x*x;return TYPE##2 (xx*xx*xx);}\
+            TYPE##3 pow6(TYPE##3 x){TYPE##3 xx=x*x;return TYPE##3 (xx*xx*xx);}\
+            TYPE##4 pow6(TYPE##4 x){TYPE##4 xx=x*x;return TYPE##4 (xx*xx*xx);}
+
+        DEFINE_POW(bool)
+        DEFINE_POW(uint)
+        DEFINE_POW(int)
+        DEFINE_POW(float)
+        DEFINE_POW(half)
+        
 
         CBUFFER_START(UnityPerMaterial)
 
@@ -291,8 +385,8 @@ Shader"ZZZ/AvatarRender"
         float _MatCapBlendMode5;
 
         float _SpecularIntensity;
-        float _Metallic;
-        float _Smoothness;
+        float _MatMetallic;
+        float _MatSmoothness;
         float _HighLightShape1;
         float _HighLightShape2;
         float _HighLightShape3;
@@ -326,6 +420,25 @@ Shader"ZZZ/AvatarRender"
         float4 _SpecularColor5;
 
         float _AmbientColorIntensity;
+
+        float _ScreenSpaceRimWidth;
+        float _ScreenSpaceRimThreshold;
+        float _ScreenSpaceRimFadeOut;
+        float _ScreenSpaceRimBrightness;
+        float _SkinMaterialID;
+        float _RimLightIntensity;
+        float4 _SunColor1;
+        float4 _SunColor2;
+        float4 _SunColor3;
+        float4 _SunColor4;
+        float4 _SunColor5;
+        float4 _RimGlowColor1;
+        float4 _RimGlowColor2;
+        float4 _RimGlowColor3;
+        float4 _RimGlowColor4;
+        float4 _RimGlowColor5;
+
+        float _AlphaClip;
 
         CBUFFER_END
 
@@ -411,7 +524,7 @@ Shader"ZZZ/AvatarRender"
 
             #if _DOMAIN_BODY || _DOMAIN_EYE
             {
-                baseAlpha=var_MainTex.a;
+                baseAlpha=var_MainTex.a*_Color.a;
             }
             #endif
 
@@ -463,12 +576,12 @@ Shader"ZZZ/AvatarRender"
 
                 float4 var_OtherDataTex_1=SAMPLE_TEXTURE2D(_OtherDataTex1,sampler_OtherDataTex1,IN.uv);
                 materialID=max(0,4-floor(var_OtherDataTex_1.r*5));
-                metallic=_Metallic*var_OtherDataTex_1.g;
+                metallic=_MatMetallic*var_OtherDataTex_1.g;
                 specularMask=var_OtherDataTex_1.b;
                 
 
                 float4 var_OtherDataTex_2=SAMPLE_TEXTURE2D(_OtherDataTex2,sampler_OtherDataTex2,IN.uv);
-                smoothness=_Smoothness*var_OtherDataTex_2.g;
+                smoothness=_MatSmoothness*var_OtherDataTex_2.g;
                 matCapMask=var_OtherDataTex_2.z;
             }
             #elif _DOMAIN_FACE
@@ -506,8 +619,8 @@ Shader"ZZZ/AvatarRender"
                 dispValue-=var_MainTex.a;
                 baseCol=lerp(baseCol,outlineColor,saturate(dispValue));
 
-                metallic*=_Metallic;
-                smoothness*=_Smoothness;
+                metallic*=_MatMetallic;
+                smoothness*=_MatSmoothness;
             }
             #endif
 
@@ -905,10 +1018,97 @@ Shader"ZZZ/AvatarRender"
             #endif
 
             float3 ambientCol=SampleSH(pixelNormalWS)*capCol*_AmbientColorIntensity;
+
+            float3 rimLightCol=0;
+            {
+                bool isSkin = (materialID == _SkinMaterialID);
+                float LdotV=dot(lightDirWS,viewDirWS);
+                float viewAttenuation=-LdotV*0.5+0.5;
+                viewAttenuation=pow2(viewAttenuation);
+                float edgeAttenuation=1-pow4(pow5(viewAttenuation));
+                viewAttenuation=viewAttenuation*0.5+0.5;
+
+                float verticalAttenuation=pixelNormalWS.y*0.5+0.5;
+                verticalAttenuation=isSkin?verticalAttenuation:pow2(verticalAttenuation);
+                verticalAttenuation=smoothstep(0,1,verticalAttenuation);
+
+                float lightAttenuation=saturate(dot(pixelNormalWS,lightDirWS))*shadowAttenuation;
+
+                float cameraDistance=length(IN.viewDirWS);
+                float NdotV=dot(pixelNormalWS,viewDirWS);
+                float fresnelDistanceFade=(isSkin?0.75:0.65)-0.45*min(1,cameraDistance/12.0);
+                float fresnelAttenuation=1-NdotV-fresnelDistanceFade;
+                float fresnelSoftness=isSkin?0.2:0.3;
+                fresnelAttenuation=smoothstep(0,fresnelSoftness,fresnelAttenuation);
+
+                float distanceAttenuation=1-0.7*saturate(cameraDistance*0.2-1);
+
+                float3 sunColor=select(materialID,
+                    _SunColor1,
+                    _SunColor2,
+                    _SunColor3,
+                    _SunColor4,
+                    _SunColor5
+                    );
+                float sunLuminance=Luminance(sunColor);
+                sunColor=isSkin?sunColor:sunLuminance.xxx;
+                float3 sunColorScaled=pow2(pow4(sunColor));
+                //sunColorScaled/=max(1e-5,dot(sunColorScaled,0.7));
+
+                sunColor=AverageColor(sunColor)*sunColorScaled;
+                sunColor=lerp(albedo,sunColor,shadowAttenuation);
+                sunColor=lerp(albedo,sunColor,edgeAttenuation);
+
+                float3 rimDiffuse=pow(max(1e-5,pbrDiffuseCol),0.2);
+                rimDiffuse=normalize(rimDiffuse);
+                float diffuseBrightness=AverageColor(pbrDiffuseCol);
+                diffuseBrightness=(1-0.2*pow2(diffuseBrightness))*0.1;
+                rimDiffuse*=diffuseBrightness;
+
+                float3 rimSpecular=pbrSpecularCol;
+                float3 rimColor=lerp(rimDiffuse,rimSpecular,metallic);
+                //rimColor*=10;
+                rimColor*=fresnelAttenuation*verticalAttenuation*
+                    viewAttenuation*distanceAttenuation*lightAttenuation;
+
+                float3 glowColor=select(materialID,
+                    _RimGlowColor1,
+                    _RimGlowColor2,
+                    _RimGlowColor3,
+                    _RimGlowColor4,
+                    _RimGlowColor5
+                    );
+                rimColor*=glowColor;
+
+                float3 rimLightBrightness=AverageColor(rimColor);
+                rimLightBrightness=pow2(rimLightBrightness);
+                rimLightBrightness=1+0.5*rimLightBrightness;
+                rimColor*=rimLightBrightness;
+                
+                float screenSpaceRim=0;
+                #if _SCREEN_SPACE_RIM
+                {
+                    float linearEyeDepth=IN.posCS.w;
+                    float3 normalVS=TransformWorldToViewDir(normalWS);
+                    float2 uvOffset=float2(normalize(normalVS.xy))*_ScreenSpaceRimWidth/linearEyeDepth;
+                    int2 texPos=IN.posCS.xy+uvOffset;
+                    texPos=min(max(0,texPos),_ScaledScreenParams.xy-1);
+                    float offsetSceneDepth=LoadSceneDepth(texPos);
+                    float offsetSceneLinearEyeDepth=LinearEyeDepth(offsetSceneDepth,_ZBufferParams);
+                    screenSpaceRim=saturate(offsetSceneLinearEyeDepth-(linearEyeDepth+_ScreenSpaceRimThreshold))*10/_ScreenSpaceRimFadeOut;
+                    screenSpaceRim*=_ScreenSpaceRimBrightness;
+                }
+                #endif
+                
+                rimLightCol=screenSpaceRim*rimColor;
+                
+            }
+            
             float3 color=ambientCol;
             color+=pbrDiffuseCol*albedo;
             color+=pbrSpecularCol*specularCol*albedo;
             color+=max(0,pbrSpecularCol*specularCol*albedo-1);
+            color+=rimLightCol;
 
             color=MixFog(color,IN.posWSAndFogFactor.w);
             
@@ -920,63 +1120,100 @@ Shader"ZZZ/AvatarRender"
         Pass
         {
             Name "Base Pass"
+            Tags
+            {
+                "LightMode"="UniversalForward"
+            }
+            
+            BlendOp [_BlendOp]
+            Blend [_SrcBlend] [_DstBlend]
+            Cull [_CullMode]
+            ZWrite [_ZWriteMode]
+            ZTest [_ZTestMode]
+            ColorMask [_ColorMask]
+            
+            Stencil
+            {
+                Ref [_Stencil]
+                Comp [_StencilCompareFunction]
+                Pass [_StencilPass]
+                Fail [_StencilFail]
+                ZFail [_StencilZFail]
+            }
             
             HLSLPROGRAM
 
             #pragma vertex MainVS
             #pragma fragment MainPS
+
+            #pragma multi_compile_fog
             
             ENDHLSL
         }
+
         Pass
         {
-            Name "Depth Only"
+            Name "SRPDefaultUnlit"
             Tags
             {
-                "LightMode"="DepthOnly"
+                "LightMode"="SRPDefaultUnlit"
             }
-            
-            ZWrite On
-            ZTest LEqual
-            ColorMask 0
-            Cull Off
+            Cull [_CullMode]
+            BlendOp [_SRPDefaultBlendOp]
+            Blend [_SRPDefaultSrcBlend] [_SRPDefaultDstBlend]
+            ZWrite [_ZWriteMode]
+            Stencil
+            {
+                Ref [_SRPStencilRef]
+                Comp [_SRPStencilCompareFunction]
+                Pass [_SRPDefaultPass]
+                Fail [_SRPStencilFail]
+                ZFail [_SRPStencilZFail]
+            }
             
             HLSLPROGRAM
 
-            #pragma multi_compile_instancing
-            #pragma multi_compile _ DOTS_INSTANCING_ON
+            #pragma shader_feature_local _SRP_DEFAULT_PASS
+            #pragma shader_feature_local _SCREEN_SPACE_SHADOW
+            #pragma shader_feature_local _MATCAP_ON
+            #pragma shader_feature_local _GAMMA_ON
+            #pragma shader_feature_local _SCREEN_SPACE_RIM
 
-            #pragma vertex vert
-            #pragma fragment frag
+            #pragma vertex MainVS2
+            #pragma fragment MainPS2
 
-            float _AlphaClip;
+            #pragma  multi_compile_fog
 
-            struct Attributes
-            {
-                float4 posOS : POSITION;
-            };
-
-            struct Varyings
-            {
-                float4 posCS: SV_POSITION;
-            };
-
-            Varyings vert(Attributes IN)
-            {
-                Varyings OUT=(Varyings)0;
-                OUT.posCS=TransformWorldToHClip(IN.posOS.xyz);
-                return OUT;
-            }
-
-            float4 frag(Varyings IN):SV_Target
-            {
-                clip(1.0-_AlphaClip);
-                return 0;
-            }
+            #if _SRP_DEFAULT_PASS
+                UniversalVaryings MainVS2(UniversalAttributes input){return MainVS(input);}
+                float4 MainPS2(UniversalVaryings input,bool isFrontFace:SV_IsFrontFace):SV_Target{return MainPS(input,isFrontFace);}
+            #else
+                void MainVS2(){};
+                void MainPS2(){};
+            #endif
             
             ENDHLSL
-            
         }
+        
+        Pass
+        {
+            Name "DepthOnly"
+            Tags{"LightMode" = "DepthOnly"}
+
+            ZWrite On
+            ColorMask 0
+            Cull off
+
+            HLSLPROGRAM
+            // Required to compile gles 2.0 with standard srp library
+
+            #pragma vertex DepthOnlyVertex
+            #pragma fragment DepthOnlyFragment
+            
+            #include "Packages/com.unity.render-pipelines.universal/Shaders/DepthOnlyPass.hlsl"
+            ENDHLSL
+        }
+
         Pass
         {
             Name "Outline Pass"
